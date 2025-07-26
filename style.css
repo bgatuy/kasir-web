@@ -6,24 +6,29 @@
 
 body {
   font-family: 'Segoe UI', sans-serif;
-  background: #f7f7f7;
+  background: #f5f6fa;
   height: 100vh;
   display: flex;
   flex-direction: column;
+  color: #333;
 }
 
 header {
-  background: #4a90e2;
+  background: #003366;
   color: white;
+  font-weight: bold;
   padding: 1rem;
   text-align: center;
   font-size: 2rem;
+  letter-spacing: 1px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 main {
   flex: 1;
   display: flex;
   flex-direction: row;
+  gap: 1px;
 }
 
 section {
@@ -40,18 +45,40 @@ section {
 
 #transactionSection {
   flex: 1;
-  background: #f9f9f9;
+  background: #fbfbfb;
+  display: flex;
+  flex-direction: column;
 }
 
 h2 {
-  margin-bottom: 1rem;
+  text-align: center;
+  font-size: 1.8rem;
+  font-weight: 500;
+  margin: 1rem 0;
+  color: #333;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid #444;
+  padding-bottom: 0.5rem;
+}
+
+h2::before {
+  content: "🛒 ";
+  font-size: 1.5rem;
 }
 
 input, button {
-  padding: 0.5rem;
+  padding: 0.6rem;
   margin: 0.25rem 0;
   font-size: 1rem;
   width: 100%;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+input:focus {
+  outline: none;
+  border-color: #003366;
+  box-shadow: 0 0 4px rgba(74, 144, 226, 0.4);
 }
 
 ul {
@@ -65,17 +92,125 @@ button {
   border: none;
   color: white;
   cursor: pointer;
-  border-radius: 4px;
+  transition: background 0.3s ease;
 }
 
 button:hover {
-  background: #357ABD;
+  background: #13356f;
+}
+
+#total {
+  font-weight: bold;
+  margin-top: auto;
+  font-size: 1.3rem;
+  padding: 0.8rem 0;
+  border-top: 2px solid #444;
+}
+
+/* Daftar Produk Scroll */
+.scrollable-box {
+  max-height: 600px;
+  overflow-y: auto;
+  border: 2px solid #e0e0e0;
+  padding: 8px;
+  border-radius: 6px;
+  background: #fdfdfd;
+  margin-top: 5px;
+}
+
+.scrollable-box::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollable-box::-webkit-scrollbar-thumb {
+  background-color: #bbb;
+  border-radius: 10px;
+}
+
+/* List Produk */
+#productList li,
+#cart li {
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  margin-bottom: 0.75rem;
+  padding: 0.5rem 1rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease;
+}
+
+#productList li:hover,
+#productList li:active,
+#cart li:hover,
+#cart li:active {
+  transform: scale(1.02);
+  background-color: #e0e0e0;
+}
+
+
+#productList span,
+#cart span {
+  flex: 1;
+  color: #333;
 }
 
 .small-btn {
-  padding: 0.3rem 0.6rem;
-  width: auto;
-  font-size: 0.9rem;
+  background-color: #4a90e2;
+  color: white;
+  border: none;
+  padding: 4px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1.2rem;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Hover untuk Desktop */
+.small-btn:hover {
+  background-color: #13356f;
+}
+
+/* Active untuk Mobile */
+.small-btn:active {
+  background-color: #0a244b;
+  transform: scale(0.95);
+}
+
+.product-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.product-label {
+  flex-grow: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-right: 10px;
+}
+
+.product-item button.small-btn {
+  margin-left: auto;
+}
+
+/* Popup Pembayaran */
+#paymentPopupContent .popup-title {
+  font-size: 1.6rem;
+  text-align: center;
+  margin-bottom: 1.5rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-bottom: 2px solid #444;
+  padding-bottom: 0.5rem;
 }
 
 #paymentPopup {
@@ -84,28 +219,109 @@ button:hover {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0,0,0,0.6);
-  display: none;
+  background: rgba(0, 0, 0, 0.5);
+  display: none; /* Awalnya disembunyikan */
   align-items: center;
   justify-content: center;
   z-index: 999;
 }
 
+#paymentPopup.show {
+  display: flex; /* Saat ditampilkan, jadi flex biar center */
+}
+
 #paymentPopupContent {
   background: white;
   padding: 2rem;
-  border-radius: 8px;
+  border-radius: 12px;
   width: 90%;
   max-width: 400px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  animation: popupFadeIn 0.3s ease;
 }
 
-#total {
-  font-weight: bold;
+/* Animasi biar gak kaku */
+@keyframes popupFadeIn {
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.payment-field {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   margin-top: 1rem;
-  font-size: 1.2rem;
 }
 
-/* Responsive Design */
+.payment-field label {
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+#cashInput {
+  width: 100%;
+  max-width: 250px;
+  padding: 0.5rem;
+  text-align: center;
+}
+
+.payment-change {
+  text-align: center;
+  margin-top: 1rem;
+  font-weight: bold;
+}
+
+/* Untuk Popup Pembayaran */
+.popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  display: none;
+  justify-content: center;
+  align-items: center;
+}
+
+.popup-content {
+  background: white;
+  padding: 20px;
+  width: 300px;
+  font-family: monospace;
+  font-size: 12px;
+}
+
+/* Tambahkan di style.css */
+.show {
+  display: flex !important; /* atau block tergantung jenis elemennya */
+}
+
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #printArea, #printArea * {
+    visibility: visible;
+  }
+  #printArea {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    background: white;
+    padding: 10px;
+  }
+}
+
+/* Responsive */
 @media (max-width: 768px) {
   main {
     flex-direction: column;
@@ -119,55 +335,76 @@ button:hover {
   }
 }
 
-/* Print Preview */
-.popup-overlay {
+#strukPopup {
   position: fixed;
   top: 0;
   left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0,0,0,0.5);
-  display: flex;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  display: none;
   justify-content: center;
   align-items: center;
   z-index: 1000;
 }
 
-.popup-content {
+#strukPopup.show {
+  display: flex;
+}
+
+#strukPopup .popup-content {
   background: white;
-  padding: 1rem;
-  border-radius: 8px;
-  max-width: 300px;
-  width: 90%;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-}
-
-.receipt-box {
-  font-family: monospace;
-  white-space: pre-wrap;
-}
-
-/* Kotak Scroll Daftar Produk */
-.scrollable-box {
-  max-height: 600px;   /* bisa disesuaikan */
-  overflow-y: auto;
-  border: 2px solid #ccc;
-  padding: 8px;
-  border-radius: 6px;
-  margin-top: 5px;
-}
-
-.scrollable-box::-webkit-scrollbar {
-  width: 6px;
-}
-
-.scrollable-box::-webkit-scrollbar-thumb {
-  background-color: #999;
+  padding: 1.5rem;
   border-radius: 10px;
+  width: 320px;
+  max-width: 90%;
+  font-family: monospace;
+  font-size: 13px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-#productList {
-  margin: 0;
-  padding: 0;
-  list-style: none;
+#strukPopup .receipt-box {
+  font-family: monospace;
+  font-size: 13px;
+  white-space: pre-wrap;
+  text-align: left;
+  background: #fefefe;
+  border: 1px dashed #ccc;
+  padding: 1rem;
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+/* Tombol Cetak & Tidak */
+#strukPopup .popup-content button {
+  width: 100%;
+  padding: 0.6rem;
+  font-size: 14px;
+  font-weight: bold;
+  border: none;
+  border-radius: 6px;
+  margin-top: 0.5rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+#strukPopup .popup-content button.save-btn {
+  background-color: #3498db;
+  color: white;
+}
+
+#strukPopup .popup-content button.save-btn:hover {
+  background-color: #2980b9;
+}
+
+#strukPopup .popup-content button:not(.save-btn) {
+  background-color: #bdc3c7;
+  color: #333;
+}
+
+#strukPopup .popup-content button:not(.save-btn):hover {
+  background-color: #95a5a6;
 }

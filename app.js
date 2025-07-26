@@ -1,7 +1,6 @@
 let products = [];
 let cart = [];
 
-// Ambil data produk dari Google Sheets
 async function loadProductsFromSheet() {
   try {
     const res = await fetch("/.netlify/functions/getProducts");
@@ -20,6 +19,11 @@ document.addEventListener("DOMContentLoaded", () => {
   searchInput.addEventListener("input", () => {
     renderProductList(searchInput.value.toLowerCase());
   });
+
+  window.addEventListener("afterprint", () => {
+    const printArea = document.getElementById("printArea");
+    if (printArea) printArea.style.display = "none";
+  });
 });
 
 function renderProductList(filter = "") {
@@ -30,8 +34,8 @@ function renderProductList(filter = "") {
     .forEach((p, index) => {
       const li = document.createElement("li");
       li.innerHTML = `
-        <div style="display: flex; justify-content: space-between; align-items: center; gap: 0.5rem;">
-          <span>${p.name} - Rp ${parseInt(p.harga).toLocaleString()}</span>
+        <div class="product-item">
+          <span class="product-label">${p.name} - Rp ${parseInt(p.harga).toLocaleString()}</span>
           <button class="small-btn" onclick="addToCart(${index})">+</button>
         </div>`;
       list.appendChild(li);
@@ -79,22 +83,27 @@ function removeFromCart(index) {
   renderCart();
 }
 
-function showPaymentPopup() {
-  document.getElementById("paymentPopup").style.display = "flex";
+  document.getElementById("payBtn").addEventListener("click", function () {
   document.getElementById("cashInput").value = "";
   document.getElementById("changeDisplay").innerText = "Rp 0";
-}
+  document.getElementById("paymentPopup").classList.add("show");
+  document.getElementById("cashInput").focus();
+});
 
 function closePaymentPopup() {
-  document.getElementById("paymentPopup").style.display = "none";
+  document.getElementById("paymentPopup").classList.remove("show");
+  document.getElementById("cashInput").value = "";
+  document.getElementById("changeDisplay").innerText = "Rp 0";
 }
 
 function calculateChange() {
   const cash = parseInt(document.getElementById("cashInput").value);
   const total = cart.reduce((sum, item) => sum + parseInt(item.harga) * item.qty, 0);
   const change = cash - total;
-  document.getElementById("changeDisplay").innerText = `Rp ${change.toLocaleString()}`;
+  document.getElementById("changeDisplay").innerText = isNaN(change) ? "Rp 0" : `Rp ${change.toLocaleString()}`;
 }
+
+const strukText = document.getElementById("printArea");
 
 function completeTransaction() {
   const total = cart.reduce((sum, item) => sum + parseInt(item.harga) * item.qty, 0);
@@ -108,35 +117,64 @@ function completeTransaction() {
 
   const now = new Date();
   const tanggal = now.toLocaleDateString("id-ID");
-  const waktu = now.toLocaleTimeString("id-ID", { hour: '2-digit', minute: '2-digit' });
+  const waktu = now.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
 
-  const transaksi = cart.map(item => {
+  const totalLebar = 40;
+  const centerText = (text) => {
+  const padding = Math.floor((totalLebar - text.length) / 2);
+  return " ".repeat(padding) + text;
+};
+
+  const garis = "-".repeat(totalLebar);
+  let transaksiStr = "";
+
+  cart.forEach(item => {
     const nama = item.name;
-    const harga = `Rp ${parseInt(item.harga).toLocaleString()}`;
     const jumlah = item.qty;
-    const totalItem = `Rp ${(parseInt(item.harga) * item.qty).toLocaleString()}`;
-    return `${nama}\n  ${harga} x${jumlah}    ${totalItem}`;
-  }).join("\n\n");
+    const harga = `Rp ${parseInt(item.harga).toLocaleString()}`;
+    const totalItem = `Rp ${(parseInt(item.harga) * jumlah).toLocaleString()}`;
+    transaksiStr += `${nama}\n`;
+    transaksiStr += `${(`${jumlah} x ${harga}`).padEnd(totalLebar - totalItem.length)}${totalItem}\n`;
+  });
 
-  const struk = `Toko Bg Atuy\nJl. Jalan No. 123, Jakarta\n\nTanggal : ${tanggal}\nWaktu   : ${waktu}\n\n${transaksi}\n\n-------------------------\nTotal   : Rp ${total.toLocaleString()}\nTunai   : Rp ${cash.toLocaleString()}\nKembali : Rp ${change.toLocaleString()}\n-------------------------\n\n   Terima kasih atas\n    kunjungan Anda!`;
+  const struk = `
+${centerText("TOKO BG ATUY")}
+${centerText("Jl. Jalanin aja dulu")}
+${garis}
+Tanggal : ${tanggal}
+Waktu   : ${waktu}
+${garis}
+${transaksiStr.trim()}
+${garis}
+${"Total".padEnd(totalLebar - `Rp ${total.toLocaleString()}`.length)}Rp ${total.toLocaleString()}
+${"Tunai".padEnd(totalLebar - `Rp ${cash.toLocaleString()}`.length)}Rp ${cash.toLocaleString()}
+${"Kembali".padEnd(totalLebar - `Rp ${change.toLocaleString()}`.length)}Rp ${change.toLocaleString()}
+${garis}
+${centerText("Terima kasih telah berbelanja")}
+`.trim();
 
-  const popup = window.open("", "Struk", "width=400,height=600");
-  popup.document.open();
-  popup.document.write(`<pre>${struk}</pre>`);
-  popup.document.close();
-  popup.print();
+  const strukText = document.getElementById("printArea");
+const lines = struk.split('\n');
+const centeredLines = lines.map(line => {
+  const visibleLength = [...line].filter(c => c >= ' ' && c <= '~').length;
+  const left = Math.floor((totalLebar - visibleLength) / 2);
+  return ' '.repeat(left) + line;
+});
+strukText.textContent = centeredLines.join('\n');
 
-  // Simpan ke Google Sheets
+
+document.getElementById("strukPopup").classList.add("show");
+
+
+// Tutup popup pembayaran setelah popup struk muncul
+setTimeout(() => {
+  closePaymentPopup();
+}, 300);
+
+
   fetch("/.netlify/functions/saveTransaction", {
     method: "POST",
-    body: JSON.stringify({
-      transaksi: cart,
-      tanggal,
-      waktu,
-      total,
-      cash,
-      change
-    })
+    body: JSON.stringify({ transaksi: cart, tanggal, waktu, total, cash, change })
   })
     .then(res => res.json())
     .then(data => console.log("Transaksi tersimpan:", data))
@@ -146,3 +184,41 @@ function completeTransaction() {
   renderCart();
   closePaymentPopup();
 }
+
+function printStruk() {
+  const printArea = document.getElementById("printArea");
+  window.print();
+
+  setTimeout(() => {
+    document.getElementById("strukPopup").classList.remove("show");
+  }, 500);
+}
+
+function printCustomReceipt() {
+  const strukArea = document.getElementById("strukPopup");
+  const printWindow = window.open('', '', 'width=400,height=600');
+  printWindow.document.write(`
+    <html>
+      <head>
+        <title>Struk Pembayaran</title>
+        <style>
+          body {
+            font-family: monospace;
+            padding: 10px;
+          }
+        </style>
+      </head>
+      <body>
+        ${strukArea.innerHTML}
+      </body>
+    </html>
+  `);
+  printWindow.document.close();
+  printWindow.focus();
+  printWindow.print();
+  printWindow.close();
+
+  // 🧹 Tutup popup setelah cetak
+  document.getElementById("strukPopup").classList.remove("show");
+}
+

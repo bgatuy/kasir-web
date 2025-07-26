@@ -8,46 +8,55 @@
 </head>
 <body>
   <header>Toko Bg Atuy</header>
+
   <main>
     <section id="productSection">
-  <h2>Daftar Produk</h2>
-  <input id="searchInput" type="text" placeholder="Cari produk..." />
-
-  <!-- Tambahin wrapper di sini -->
-  <div class="scrollable-box">
-    <ul id="productList"></ul>
-  </div>
-</section>
+      <h2>Daftar Produk</h2>
+      <input id="searchInput" type="text" placeholder="Cari produk..." />
+      <div class="scrollable-box">
+        <ul id="productList"></ul>
+      </div>
+    </section>
 
     <section id="transactionSection">
       <h2>Transaksi</h2>
       <ul id="cart"></ul>
       <div id="total">Rp 0</div>
-      <button onclick="showPaymentPopup()">Bayar</button>
+      <button id="payBtn" class="pay-btn">💵 Bayar</button>
     </section>
   </main>
 
   <!-- Popup Pembayaran -->
-  <div id="paymentPopup">
-    <div id="paymentPopupContent">
-      <h2>Pembayaran</h2>
-      <label for="cashInput">Tunai:</label>
-      <input type="number" id="cashInput" oninput="calculateChange()" />
-      <div>Kembali: <span id="changeDisplay">Rp 0</span></div>
-      <button onclick="completeTransaction()">Simpan & Cetak</button>
-      <button onclick="closePaymentPopup()">Batal</button>
+  <div id="paymentPopup" class="popup-overlay" style="display: none;">
+    <div id="paymentPopupContent" class="popup-content">
+      <h2 class="popup-title"><i class="fa-solid fa-money-bill-wave"></i> Pembayaran</h2>
+
+      <div class="payment-field">
+        <label for="cashInput">Tunai:</label>
+        <input type="number" id="cashInput" placeholder="Masukkan jumlah tunai" oninput="calculateChange()" />
+      </div>
+
+      <div class="payment-change">
+        Kembali: <span id="changeDisplay">Rp 0</span>
+      </div>
+
+      <div style="margin-top: 1.5rem; display: flex; justify-content: space-between; gap: 1rem;">
+        <button onclick="completeTransaction()" class="save-btn">💾 Simpan & Cetak</button>
+        <button onclick="closePaymentPopup()" class="cancel-btn">❌ Batal</button>
+      </div>
     </div>
   </div>
 
- <div id="customReceiptPopup" class="popup-overlay" style="display: none;">
-  <div class="popup-content">
-    <pre id="customReceiptText" class="receipt-box"></pre>
-    <div style="text-align: right; margin-top: 1rem;">
-      <button onclick="printCustomReceipt()">Cetak</button>
-      <button onclick="closeCustomReceipt()">Tutup</button>
+  <!-- Popup Struk -->
+  <div id="strukPopup" class="popup-overlay" style="display: none;">
+    <div class="popup-content">
+      <pre id="printArea" class="receipt-box"></pre>
+      <div style="text-align: right; margin-top: 1rem;">
+        <button onclick="printCustomReceipt()" class="save-btn">🖨️ Cetak</button>
+        <button onclick="document.getElementById('strukPopup').classList.remove('show')">Tidak</button>
+      </div>
     </div>
   </div>
-</div>
 
   <script src="app.js"></script>
 </body>
